@@ -7,7 +7,24 @@ const router = express.Router();
 // ALL TASKS
 router.get("/", async (req, res, next) => {
     try {
-        const tasks = await Task.find();
+        //default Wert
+        let sortDirection = "asc";
+        // falls gesetzt als Query Parameter: passe an
+        if (req.query.sortDirection === "desc") {
+            sortDirection = "desc";
+        }
+
+        //default Wert
+        let sortField = "title";
+        // falls gesetzt als Query Parameter: passe an
+        if (req.query.sortField === "status") {
+            sortField = "status";
+        } else if (req.query.sortField === "priority") {
+            sortField = "priority"
+        }
+
+        const tasks = await Task.find().sort({ [sortField]: sortDirection });
+
         res.status(200).json(tasks);
     } catch (error) {
         next(error);
@@ -24,7 +41,7 @@ router.post("/newtask", async (req, res, next) => {
         }
 
         // Create new task
-        const newTask = Task.create({
+        const newTask = await Task.create({
             title: title,
             description: description ? description : "",
             priority: priority,
@@ -42,14 +59,24 @@ router.post("/newtask", async (req, res, next) => {
 //DELETE Task
 router.delete("/:id", async (req, res, next) => {
     try {
-        const { id } = req.params;
-        const deletedTask = await Task.findByIdAndDelete(id);
+        // const { id } = req.params;
+        // const deletedTask = await Task.findByIdAndDelete(id);
 
-        if (!deletedTask) {
+        // if (!deletedTask) {
+        //     return res.status(404).json({ message: "Task not found." });
+        // }
+
+        // res.status(200).json({ message: "Task deleted successfully", task: deletedTask });
+
+        const data = await Task.deleteOne({ _id: req.params.id })
+
+        if (data.deletedCount === 0) {
             return res.status(404).json({ message: "Task not found." });
         }
 
-        res.status(200).json({ message: "Task deleted successfully", task: deletedTask });
+        res.status(200).json({ message: "Task deleted successfully", task: data });
+
+
     } catch (error) {
         next(error);
     }
@@ -59,25 +86,32 @@ router.delete("/:id", async (req, res, next) => {
 // UPDATE task
 router.patch("/:id", async (req, res, next) => {
     try {
-        const { id } = req.params;
-        const { title, description, priority, status } = req.body;
 
-        const updatedTask = await Task.findByIdAndUpdate(
-            id,
-            {
-                ...(title && { title }),
-                ...(description && { description }),
-                ...(priority && { priority }),
-                ...(status && { status })
-            },
-            { new: true, runValidators: true }
-        );
-
-        if (!updatedTask) {
+        const data = await Task.updateOne({ _id: req.params.id }, req.body, { runValidators: true });
+        if (data.matchedCount === 0) {
             return res.status(404).json({ message: "Task not found." });
         }
 
-        res.status(200).json({ message: "Task updated successfully", task: updatedTask });
+
+        // const { id } = req.params;
+        // const { title, description, priority, status } = req.body;
+
+        // const updatedTask = await Task.findByIdAndUpdate(
+        //     id,
+        //     {
+        //         ...(title && { title }),
+        //         ...(description && { description }),
+        //         ...(priority && { priority }),
+        //         ...(status && { status })
+        //     },
+        //     { new: true, runValidators: true }
+        // );
+
+        // if (!updatedTask) {
+        //     return res.status(404).json({ message: "Task not found." });
+        // }
+
+        res.status(200).json({ message: "Task updated successfully", task: data });
     } catch (error) {
         next(error);
     }
