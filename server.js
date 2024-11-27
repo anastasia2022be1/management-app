@@ -2,6 +2,7 @@ import express from "express"
 import connect from "./db.js"
 import cors from "cors";
 import taskRouter from "./routes/task.js"
+import authRouter from "./routes/auth.js";
 import mongoose from "mongoose";
 
 
@@ -11,7 +12,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use("/api/tasks", taskRouter)
+app.use("/api/tasks", taskRouter);
+app.use("/api/auth", authRouter);;
 
 app.use((err, req, res, next) => {
     if (err instanceof mongoose.Error.ValidationError) {

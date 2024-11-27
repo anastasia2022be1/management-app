@@ -1,0 +1,14 @@
+POST /api/auth/register- // Register for user
+{
+    "username": "adminuser",
+    "email": "admin@example.com",
+    "password": "securepassword",
+    "role": "admin"
+}
+
+POST http://localhost:3000/api/auth/login - // login for user
+
+{
+    "email": "admin@example.com",
+    "password": "securepassword"
+}

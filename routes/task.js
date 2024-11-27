@@ -1,11 +1,12 @@
 import express from "express";
 import Task from "../models/Task.js";
+import { authenticate } from "../middleware/authenticate.js";
 
 
 const router = express.Router();
 
 // ALL TASKS
-router.get("/", async (req, res, next) => {
+router.get("/", authenticate, async (req, res, next) => {
     try {
         //default Wert
         let sortDirection = "asc";
@@ -23,7 +24,7 @@ router.get("/", async (req, res, next) => {
             sortField = "priority"
         }
 
-        const tasks = await Task.find().sort({ [sortField]: sortDirection });
+        const tasks = await Task.find({ userId: req.user.id }).sort({ [sortField]: sortDirection });
 
         res.status(200).json(tasks);
     } catch (error) {
